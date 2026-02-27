@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BK Admin Panel</title>
+    <!-- simple shared stylesheet -->
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div class="app-container">
+
+    <!-- ===== MENU ===== -->
+    <div class="navbar nav-admin">
+        <div class="logo">ADMIN</div>
+        <ul>
+            <li><a href="login.html">LOGOUT</a></li>
+        </ul>
+    </div>
+
+    <div class="admin-header">
+        <h2> USERS AND TELLERS MANAGEMENT</h2>
+        <span></span>
+    </div>
+
+    <!-- toggle buttons to switch sections -->
+    <div class="toggle-buttons">
+        <button id="showUsers">Show users</button>
+        <button id="showTx">Show transactions</button>
+    </div>
+
+    <div id="users-section" class="section-card">
+        <h3><i class="icon"></i> Users Management</h3>
+        <div id="users">
+            <p>Loading users...</p>
+        </div>
+    </div>
+
+    <div id="transactions-section" class="section-card hidden">
+        <h3><i class="icon"></i> All Transactions</h3>
+        <div id="transactions">
+            <p>Loading transactions...</p>
+        </div>
+    </div>
+    <center><button onclick="logout()">LOGOUT</button></center>
+<script>
+async function logout(){
+        localStorage.removeItem('userId');
+        window.location.href='login.html';
+    }
+
+// simple toggling logic
+function showSection(section) {
+    document.getElementById('users-section').classList.toggle('hidden', section !== 'users');
+    document.getElementById('transactions-section').classList.toggle('hidden', section !== 'transactions');
+}
+
+document.getElementById('showUsers').addEventListener('click', () => showSection('users'));
+document.getElementById('showTx').addEventListener('click', () => showSection('transactions'));
+async function loadAdmin() {
+  if (localStorage.getItem("role") !== "admin") return;
+
+  try {
+    // 1. Gufata Users
+    let resUsers = await fetch("/admin/users");
+    let users = await resUsers.json();
+    document.getElementById("users").innerHTML = `
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Izina</th><th>Balance</th><th>Role</th></tr></thead>
+          <tbody>
+            ${users.map(u => `<tr><td>${u.name}</td><td>${u.balance} FRW</td><td>${u.role}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+    // 2. Gufata Transactions zose zifite amazina
+    let resTx = await fetch("/admin/transactions");
+    let txs = await resTx.json();
+    
+    document.getElementById("transactions").innerHTML = `
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Umukiriya</th>
+              <th>Ubwoko</th>
+              <th>Amafaranga</th>
+              <th>Teller (Uwemeje)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${txs.map(t => {
+              const clientName = t.userId ? t.userId.name : "Ntabwo azwi";
+              const tellerName = t.tellerId ? t.tellerId.name : "Ntabwo azwi";
+              
+              return `
+                <tr>
+                  <td><b>${clientName}</b></td>
+                  <td>${t.type.toUpperCase()}</td>
+                  <td>${Number(t.amount).toLocaleString()} FRW</td>
+                  <td>${tellerName}</td>
+                  <td><span class="status ${t.status}">${t.status}</span></td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+  } catch (err) {
+    console.error("Ikosa ryabaye:", err);
+  }
+}
+
+loadAdmin();
+
+
+
+</script> 
+</body>
+</html>

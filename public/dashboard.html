@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BK Services</title>
+<style>
+    /* ===== Body & Background ===== */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f0f2f5, #dfe6e9);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 30px;
+    }
+
+    /* ===== Card Containers ===== */
+    .container, .container2 {
+        background: #fff;
+        padding: 40px 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        width: 100%;
+        max-width: 360px;
+        margin-bottom: 30px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+    }
+    .container:hover, .container2:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+
+    /* ===== Headings ===== */
+    h2 {
+        color: #005eb8;
+        font-size: 26px;
+        margin-bottom: 25px;
+        font-weight: 700;
+    }
+
+    /* ===== Buttons ===== */
+    button {
+        width: 100%;
+        padding: 14px;
+        margin-bottom: 15px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        opacity: 0.95;
+    }
+
+    .deposit-btn { background-color: #28a745; }   /* Green */
+    .deposit-btn:hover { background-color: #218838; }
+
+    .withdraw-btn { background-color: #dc3545; }  /* Red */
+    .withdraw-btn:hover { background-color: #c82333; }
+
+    .register { background-color: #3c1891; }      /* Purple */
+    .register:hover { background-color: #2e0f6b; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 400px) {
+        .container, .container2 {
+            padding: 30px 20px;
+        }
+        h2 {
+            font-size: 22px;
+        }
+        button {
+            padding: 12px;
+            font-size: 15px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>BK Services</h2>
+    <button class="withdraw-btn" onclick="goWithdraw()">Withdraw</button>
+    <button class="deposit-btn" onclick="goDeposit()">Deposit</button>
+</div>
+
+<div class="container2">
+    <button class="register" onclick="REGgo()">REGISTER</button>
+</div>   
+
+<script>
+    if (localStorage.getItem('role') !== 'user') {
+        alert('Banza wiyandikishe mbere!');
+    }
+
+    function REGgo(){
+        window.location.href= "register.html";
+    }
+
+    function goDeposit() {
+        localStorage.setItem('transType', 'deposit');
+        window.location.href = 'transaction.html';
+    }
+
+    function goWithdraw() {
+        localStorage.setItem('transType', 'withdraw');
+        window.location.href = 'transaction.html';
+    }
+</script>
+
+</body>
+</html>

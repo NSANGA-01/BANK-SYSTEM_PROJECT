@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transaction History - BK</title>
+<style>
+    /* ===== Body & Background ===== */
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, #f0f2f5, #dfe6e9);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    /* ===== Container Card ===== */
+    .history-container {
+        max-width: 900px;
+        margin: 20px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .history-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.18);
+    }
+
+    /* ===== Heading ===== */
+    h2 {
+        color: #005eb8;
+        border-bottom: 3px solid #005eb8;
+        padding-bottom: 10px;
+        margin-bottom: 25px;
+        font-size: 28px;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    /* ===== Table Styling ===== */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th {
+        background-color: #f1f1f1;
+        padding: 14px;
+        text-align: left;
+        font-size: 14px;
+        color: #333;
+        border-bottom: 2px solid #dee2e6;
+    }
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 15px;
+        color: #555;
+    }
+    tr:hover {
+        background-color: #f9fbff;
+    }
+
+    /* ===== Badges for Type & Status ===== */
+    .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+    .deposit {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .withdraw {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .approved {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    /* ===== Logout Button ===== */
+    #logout-btn {
+        display: block;
+        margin: 25px auto 0 auto;
+        padding: 12px 25px;
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+    #logout-btn:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 500px) {
+        .history-container {
+            padding: 25px 15px;
+        }
+        h2 {
+            font-size: 24px;
+        }
+        th, td {
+            font-size: 13px;
+            padding: 10px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="history-container">
+    <h2>My Transactions</h2>
+
+    <table id="historyTable">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Type</th>
+                <th>Amount (FRW)</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="5" style="text-align:center; color:gray;">Loading your history...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<button id="logout-btn" onclick="logout()">LOGOUT</button>
+
+<script>
+async function logout(){
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
+    window.location.href='login.html';
+}
+
+async function loadHistory() {
+    const role = localStorage.getItem("role");
+    const id = localStorage.getItem("userId");
+
+    if (role !== "user") return;
+
+    const res = await fetch(`/my-transactions/${id}`);
+    const data = await res.json();
+
+    const tbody = document.querySelector("#historyTable tbody");
+    if(data.length === 0){
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:gray;">No transactions yet.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = data.map(tx => `
+        <tr>
+            <td>${tx.userId?.name || "Unknown"}</td>
+            <td><span class="badge ${tx.type}">${tx.type}</span></td>
+            <td class="amount">${tx.amount}</td>
+            <td><span class="badge ${tx.status}">${tx.status}</span></td>
+            <td>${new Date(tx.createdAt || Date.now()).toLocaleString()}</td>
+        </tr>
+    `).join("");
+}
+
+loadHistory();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Transaction - BK</title>
+<style>
+    /* ===== Body & Background ===== */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f0f2f5, #dfe6e9);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+    }
+
+    /* ===== Card Container ===== */
+    .transaction-card {
+        background: #fff;
+        padding: 40px 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        width: 100%;
+        max-width: 400px;
+        border-top: 5px solid #005eb8;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .transaction-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+    }
+
+    /* ===== Heading ===== */
+    h2 {
+        color: #005eb8;
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    /* ===== Labels ===== */
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #555;
+        font-weight: 600;
+    }
+
+    /* ===== Inputs & Selects ===== */
+    input, select {
+        width: 100%;
+        padding: 14px 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        font-size: 15px;
+        background-color: #fafafa;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+        border-color: #005eb8;
+        background-color: #fff;
+        outline: none;
+        box-shadow: 0 0 8px rgba(0,94,184,0.25);
+    }
+
+    /* ===== Button ===== */
+    button {
+        width: 100%;
+        padding: 15px;
+        background-color: #005eb8;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+        background-color: #00448a;
+        transform: translateY(-2px);
+    }
+
+    /* ===== Error Message ===== */
+    .error {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: -15px;
+        margin-bottom: 15px;
+        display: none;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 420px) {
+        .transaction-card {
+            padding: 30px 20px;
+        }
+        h2 {
+            font-size: 22px;
+        }
+        button, input, select {
+            padding: 12px;
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="transaction-card">
+    <h2>New Transaction</h2>
+
+    <label for="type">Transaction Type</label>
+    <select id="type">
+        <option value="deposit">Deposit (Kubitsa)</option>
+        <option value="withdraw">Withdraw (Kubikuza)</option>
+    </select>
+
+    <label for="amount">Amount (FRW)</label>
+    <input type="number" id="amount" placeholder="Enter amount e.g. 5000">
+
+    <label for="teller">Select Teller</label>
+    <select id="teller">
+        <option value="" disabled selected>Select a teller...</option>
+        <option value="697ccd657aabf223b8d810e5">KAMANZI (teller1)</option>
+        <option value="697ccdab7aabf223b8d810e6">NGIRO (teller2)</option>
+        <option value="697d11a47aabf223b8d810ed">VEDASTE (teller3)</option>
+    </select>
+
+    <button onclick="sendTransaction()">Submit Transaction</button>
+
+    <div class="error" id="error-msg">Please fill all fields correctly!</div>
+</div>
+
+<script>
+    // Security check
+    if (localStorage.getItem('role') !== 'user') {
+        alert('Banza wiyandikishe mbere!');
+        window.location.href = "login.html";
+    }
+
+    async function sendTransaction() {
+        const userId = localStorage.getItem("userId");
+        const type = document.getElementById("type").value;
+        const amount = document.getElementById("amount").value;
+        const tellerId = document.getElementById("teller").value;
+
+        if (!type || !amount || !tellerId) {
+            document.getElementById("error-msg").style.display = "block";
+            return;
+        } else {
+            document.getElementById("error-msg").style.display = "none";
+        }
+
+        const res = await fetch("/transaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, tellerId, type, amount })
+        });
+
+        const data = await res.json();
+        alert(data.msg);
+        window.location.href = 'history.html';
+    }
+</script>
+
+</body>
+</html>

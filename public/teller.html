@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BK Teller Dashboard</title>
+<style>
+    /* ===== Body & Font ===== */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f0f2f5, #dfe6e9);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    /* ===== Header ===== */
+    header {
+        background-color: #005eb8;
+        color: white;
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 10px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    header h2 {
+        margin: 0;
+        letter-spacing: 1px;
+        font-size: 28px;
+    }
+
+    /* ===== Dashboard Container ===== */
+    .dashboard-container {
+        max-width: 900px;
+        margin: auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .dashboard-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    h3 {
+        color: #005eb8;
+        border-bottom: 2px solid #005eb8;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* ===== Transactions List ===== */
+    .transaction {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        background-color: #f9f9ff;
+        transition: background 0.3s;
+    }
+    .transaction:hover {
+        background-color: #e9f0ff;
+    }
+
+    .transaction b {
+        color: #333;
+    }
+
+    /* ===== Buttons ===== */
+    button {
+        padding: 7px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    button.approve {
+        background-color: #28a745;
+        color: white;
+    }
+    button.approve:hover {
+        background-color: #218838;
+    }
+
+    button.logout {
+        background-color: #dc3545;
+        color: white;
+        margin-top: 20px;
+        width: 150px;
+        font-size: 15px;
+    }
+    button.logout:hover {
+        background-color: #c82333;
+    }
+
+    button.history {
+        background-color: #005eb8;
+        color: white;
+        margin-top: 20px;
+        width: 150px;
+        font-size: 15px;
+    }
+    button.history:hover {
+        background-color: #00448a;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 500px) {
+        .transaction {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .transaction button {
+            margin-top: 8px;
+            width: 100%;
+        }
+        button.logout, button.history {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h2>BK Teller Dashboard</h2>
+</header>
+
+<div class="dashboard-container">
+    <h3>Recent Transactions</h3>
+    <div id="transactions">
+        <p style="text-align:center; color:gray;">Loading transactions...</p>
+    </div>
+</div>
+
+<center>
+    <button class="history" onclick="showHistory()">GO TO HISTORY</button>
+    <button class="logout" onclick="logout()">LOGOUT</button>
+</center>
+
+<script>
+    function checkAuth() {
+        if(localStorage.getItem('role') !== 'teller') {
+            window.location.href = 'login.html';
+        }
+    }
+
+    async function showHistory(){
+        window.location.href = "tellerdashboard.html";
+    }
+
+    async function logout(){
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+        window.location.href='login.html';
+    }
+
+    async function loadTellerTransactions() {
+        if (localStorage.getItem("role") !== "teller") return;
+
+        const tellerId = localStorage.getItem("userId");
+        const res = await fetch(`/teller-transactions/${tellerId}`);
+        const data = await res.json();
+
+        const div = document.getElementById("transactions");
+        div.innerHTML = "";
+
+        if(data.length === 0){
+            div.innerHTML = '<p style="text-align:center; color:gray;">No transactions available</p>';
+            return;
+        }
+
+        data.forEach(t => {
+            const customerName = t.userId && t.userId.name ? t.userId.name : "Unknown";
+            div.innerHTML += `
+                <div class="transaction">
+                    <span><b>Umukiriya:</b> ${customerName} | ${t.type} - ${t.amount} FRW</span>
+                    <button class="approve" onclick="approve('${t._id}')">Approve</button>
+                </div>
+            `;
+        });
+    }
+
+    async function approve(id) {
+        await fetch("/approve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id })
+        });
+        alert("Approved");
+        loadTellerTransactions();
+    }
+
+    checkAuth();
+    loadTellerTransactions();
+</script>
+
+</body>
+</html>

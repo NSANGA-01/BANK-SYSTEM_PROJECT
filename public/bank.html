@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BK Account Verification</title>
+<style>
+    /* ===== Body & Background ===== */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #00b894, #005eb8);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+    }
+
+    /* ===== Card Container ===== */
+    .verification-card {
+        background: #fff;
+        padding: 40px 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .verification-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+
+    /* ===== Heading ===== */
+    h2 {
+        color: #005eb8;
+        margin-bottom: 30px;
+        font-weight: 700;
+        font-size: 26px;
+    }
+
+    /* ===== Input Fields ===== */
+    input {
+        width: 100%;
+        padding: 14px 15px;
+        margin-bottom: 15px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 16px;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    input:focus {
+        border-color: #005eb8;
+        box-shadow: 0 0 8px rgba(0,94,184,0.3);
+    }
+
+    /* ===== Buttons ===== */
+    button {
+        width: 100%;
+        padding: 14px;
+        background-color: #005eb8;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+        margin-top: 10px;
+    }
+    button:hover {
+        background-color: #00448a;
+        transform: translateY(-2px);
+    }
+
+    /* ===== Logout button ===== */
+    .logout-btn {
+        margin-top: 20px;
+        width: 200px;
+        background-color: #ff4757;
+    }
+    .logout-btn:hover {
+        background-color: #e84118;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 420px) {
+        .verification-card {
+            padding: 30px 20px;
+        }
+        button {
+            padding: 12px;
+            font-size: 15px;
+        }
+        h2 {
+            font-size: 22px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="verification-card">
+    <h2>Bank of Kigali (BK)</h2>
+
+    <input type="text" id="bkAccount" placeholder="Enter BK Account Number">
+    <input type="password" id="bankPassword" placeholder="Enter BK Password">
+    
+    <button onclick="verifyBK()">Continue</button>
+    <button class="logout-btn" onclick="logout()">LOGOUT</button>
+</div>
+
+<script>
+async function logout() {
+    localStorage.removeItem('userId');
+    localStorage.removeItem('bankRole');
+    window.location.href="login.html";
+}
+
+async function verifyBK() {
+    if(localStorage.getItem('role') !== 'user'){
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const account = document.getElementById('bkAccount').value.trim();
+    const password = document.getElementById('bankPassword').value;
+
+    if (!account || !password) {
+        alert("Mwihangane, andika konti n'ijambo ry'ibanga!");
+        return;
+    }
+
+    const res = await fetch('/verify-bk', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account, password }) 
+    });
+
+    const data = await res.json();
+    
+    if (!data.ok) {
+        alert("Access denied: wrong BK credentials");
+    } else {
+        localStorage.setItem("bankRole", data.role);
+        window.location.href = "dashboard.html";
+    }
+}
+</script>
+
+</body>
+</html>

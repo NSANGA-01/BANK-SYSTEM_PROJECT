@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teller Transactions - BK</title>
+<style>
+    /* ===== Body ===== */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f6f8;
+        padding: 20px;
+        margin: 0;
+    }
+
+    h2 {
+        text-align: center;
+        color: #005eb8;
+        margin-bottom: 25px;
+        font-size: 28px;
+    }
+
+    /* ===== Table Styles ===== */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+
+    thead {
+        background-color: #005eb8;
+        color: white;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #e6f0ff;
+    }
+
+    /* ===== Status Badges ===== */
+    .status {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    /* ===== Buttons ===== */
+    button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 13px;
+        transition: all 0.3s ease;
+    }
+
+    button:hover {
+        opacity: 0.85;
+    }
+
+    button.view {
+        background-color: #28a745;
+        color: white;
+    }
+
+    /* ===== Responsive ===== */
+    @media(max-width: 600px){
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+
+        thead tr {
+            display: none;
+        }
+
+        tr {
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            color: #333;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 5px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h2>Teller Transactions</h2>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Type</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="txTable"></tbody>
+</table>
+
+<script>
+if(localStorage.getItem('role')!=='teller'){
+    alert('Banza wiyandikishe, ibi bireba umukozi wacu!');
+}
+
+const tellerId = localStorage.getItem("userId");
+
+fetch(`/teller/${tellerId}/transaction`)
+  .then(res => res.json())
+  .then(data => {
+    const table = document.getElementById("txTable");
+
+    data.forEach(tx => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td data-label="User">${tx.userId?.name || "Unknown"}</td>
+        <td data-label="Type">${tx.type}</td>
+        <td data-label="Amount">${tx.amount}</td>
+        <td data-label="Status"><span class="status ${tx.status.toLowerCase()}">${tx.status}</span></td>
+        <td data-label="Date">${new Date(tx.createdAt || Date.now()).toLocaleString()}</td>
+        <td data-label="Action"><button class="view" onclick="viewTx('${tx._id}')">View</button></td>
+      `;
+
+      table.appendChild(row);
+    });
+  });
+
+function viewTx(txId) {
+  fetch(`/transaction/${txId}`)
+    .then(res => res.json())
+    .then(tx => {
+      const printContent = `
+        <h2>Transaction Details</h2>
+        <p><strong>User:</strong> ${tx.userId?.name || "Unknown"}</p>
+        <p><strong>Type:</strong> ${tx.type}</p>
+        <p><strong>Amount:</strong> ${tx.amount}</p>
+        <p><strong>Status:</strong> ${tx.status}</p>
+        <p><strong>Date:</strong> ${new Date(tx.createdAt || Date.now()).toLocaleString()}</p>
+        <p><strong>Teller:</strong> ${tx.tellerId?.name || "Unknown"}</p>
+      `;
+
+      const printWindow = window.open('', '', 'height=600,width=800');
+      printWindow.document.write('<html><head><title>Transaction Details</title></head><body>');
+      printWindow.document.write(printContent);
+      printWindow.document.write('<br><button onclick="window.print()">Print</button>');
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+    })
+    .catch(err => console.error("Error fetching transaction:", err));
+}
+</script>
+
+</body>
+</html>
