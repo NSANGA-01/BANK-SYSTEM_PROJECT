@@ -1,6 +1,5 @@
-# Bwira GitHub ko amadosiye yose agomba kubarwa nka JavaScript
+
 * linguist-language=JavaScript
 
-# Kura amadosiye ya HTML na CSS mu mibare (bituma JS iza imbere)
 *.html linguist-documentation
 *.css linguist-documentation
